@@ -5,8 +5,8 @@
 #include "ssl_client.h"
 #include "ArduinoJson.h"
 
-const char* ssid = "iboudado's PC"; // replace HERE with your wifi name
-const char* password =  ",0R0q829"; // replace HERE with your wifi password
+const char* ssid = "HERE"; // replace HERE with your wifi name
+const char* password =  "HERE"; // replace HERE with your wifi password
 
 void setup() {
   Serial.begin(115200);
