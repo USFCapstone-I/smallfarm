@@ -483,14 +483,18 @@ IPAddress WiFiSTAClass::gatewayIP()
  * @param dns_no
  * @return IPAddress DNS Server IP
  */
+
+/* @iboudado commented it out
+
 IPAddress WiFiSTAClass::dnsIP(uint8_t dns_no)
 {
     if(WiFiGenericClass::getMode() == WIFI_MODE_NULL){
         return IPAddress();
     }
-    //const ip_addr_t* dns_ip = dns_getserver(dns_no);
-    //return IPAddress(dns_ip->u_addr.ip4.addr);
+    const ip_addr_t* dns_ip = dns_getserver(dns_no);
+    return IPAddress(dns_ip->u_addr.ip4.addr);
 }
+*/
 
 /**
  * Get the broadcast ip address.
