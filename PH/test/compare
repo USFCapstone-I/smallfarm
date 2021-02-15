@@ -1,0 +1,75 @@
+#include "WiFi.h"
+#include "WiFiClientSecure.h"
+#include "HTTPClient.h"
+#include "ssl_client.h"
+#include "ArduinoJson.h"
+#include <Arduino.h>
+#include "DHTesp.h"
+
+#define DHTPIN 13
+#define PHPIN 15
+float value;
+float pH;
+DHTesp dht;
+const char* ssid = "iboudado's PC"; // replace HERE with your wifi name
+const char* password =  ",0R0q829"; // replace HERE with your wifi password
+
+void setup() {
+  Serial.begin(115200);
+  WiFi.begin(ssid, password);
+  Serial.print("Connecting to WiFi");
+  dht.setup(DHTPIN, dht.DHT22);
+  analogReadResolution(8);
+ 
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.println("...");
+    delay(2000);
+  }
+  Serial.println("\nConnected to the WiFi network");
+  //Serial.print("IP address: ");
+  //Serial.println(WiFi.localIP());
+}
+ 
+void loop() {
+  if ((WiFi.status() == WL_CONNECTED)) //Check the current connection status
+  {
+    //----------------DHT GROWING CHAMBER------------------
+    float h = dht.getHumidity();
+    float t = dht.getTemperature(); // in C (default)
+    float f = dht.toFahrenheit(t); // converts in F 
+    
+    if (isnan(h) || isnan(t) || isnan(f)) { // Check if any reads failed and exit early (to try again).
+      Serial.println("Failed to read from DHT sensor!");
+      return;
+    }
+
+    Serial.println("Temp: " + String(t) + " " + String(f));
+    
+    //------------PH LEVEL---------------------------
+    value = analogRead(PHPIN);
+    pH = (value/255) * 5.0;
+    Serial.println("pH: " + String(pH));
+
+    //------------SEND DATA--------------------------
+    HTTPClient client;
+    client.begin("http://starter.testing.iothost.net/cowtemp01/temp"); // device ID / message ID
+    String temperaturejson = "{'temp':" + String(f) + ",'humidity':" + String(h) + "}";
+    int httpCode = client.POST(temperaturejson.c_str());
+
+    if (httpCode > 0) {
+        String payload = client.getString();
+        Serial.println("\nStatuscode: " + String(httpCode));
+        Serial.println(payload);
+        Serial.println("...JSON...");
+        client.end();
+    }
+    else {
+        Serial.println("Error on HTTP request");
+    }
+  }
+  else
+  {
+    Serial.println("Connection lost");
+  }
+  delay(5000);
+}
